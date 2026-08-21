@@ -10,53 +10,49 @@ content="width=device-width, initial-scale=1">
 <style>
 
 body {
-  margin:0;
-  padding:15px;
-  font-family:Arial;
-  background:#eef7f1;
-  text-align:center;
+  margin: 0;
+  padding: 15px;
+  font-family: Arial, sans-serif;
+  background: #eef7f1;
+  text-align: center;
 }
 
-.box {
-  max-width:480px;
-  margin:auto;
-  background:white;
-  padding:20px;
-  border-radius:20px;
-  box-shadow:0 4px 15px rgba(0,0,0,.15);
+.container {
+  max-width: 480px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,.15);
 }
 
 h2 {
-  color:#087443;
+  color: #087443;
 }
 
 video {
-  width:100%;
-  background:#000;
-  border-radius:15px;
-  margin-top:15px;
+  width: 100%;
+  border-radius: 15px;
+  background: #000;
+  margin-top: 15px;
 }
 
 button {
-  width:100%;
-  padding:16px;
-  margin-top:15px;
-  border:0;
-  border-radius:10px;
-  background:#087443;
-  color:white;
-  font-size:17px;
-  font-weight:bold;
-}
-
-button:disabled {
-  background:#999;
+  width: 100%;
+  padding: 16px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 10px;
+  background: #087443;
+  color: white;
+  font-size: 17px;
+  font-weight: bold;
 }
 
 #status {
-  margin-top:15px;
-  font-weight:bold;
-  line-height:1.6;
+  margin-top: 15px;
+  font-weight: bold;
+  line-height: 1.6;
 }
 
 </style>
@@ -65,39 +61,35 @@ button:disabled {
 
 <body>
 
-<div class="box">
+<div class="container">
 
 <h2>📷 KAMERA ABSENSI</h2>
 
 <p>MTsN 8 Kediri</p>
 
 <video
-  id="kamera"
-  autoplay
-  muted
-  playsinline>
+id="kamera"
+autoplay
+muted
+playsinline>
 </video>
 
-<button
-  id="btnKamera"
-  onclick="bukaKamera()">
-
+<button onclick="bukaKamera()">
 📷 BUKA KAMERA
-
 </button>
 
 <button
-  id="btnFoto"
-  onclick="ambilFoto()"
-  disabled>
+id="btnFoto"
+onclick="ambilFoto()"
+disabled>
 
 📸 AMBIL FOTO
 
 </button>
 
 <canvas
-  id="canvas"
-  style="display:none">
+id="canvas"
+style="display:none">
 </canvas>
 
 <div id="status">
@@ -106,89 +98,42 @@ Silakan tekan BUKA KAMERA
 
 </div>
 
-
 <script>
-
-const params =
-new URLSearchParams(
-window.location.search
-);
-
-const token =
-params.get("token");
-
-const returnURL =
-params.get("return");
 
 let stream = null;
 
 
-// ================================
+// ==============================
 // BUKA KAMERA
-// ================================
+// ==============================
 
 async function bukaKamera() {
+
+const video =
+document.getElementById("kamera");
 
 const status =
 document.getElementById("status");
 
-const kamera =
-document.getElementById("kamera");
-
 try {
 
 status.innerHTML =
-"⏳ Meminta izin kamera...";
+"⏳ Meminta akses kamera...";
 
-
-// Cek dukungan kamera
-
-if (!navigator.mediaDevices) {
-
-throw new Error(
-"Browser tidak menyediakan mediaDevices."
-);
-
-}
-
-if (!navigator.mediaDevices.getUserMedia) {
-
-throw new Error(
-"getUserMedia tidak tersedia."
-);
-
-}
-
-
-// Minta kamera depan
 
 stream =
 await navigator.mediaDevices.getUserMedia({
 
-video: {
-facingMode: {
-ideal: "user"
-},
-width: {
-ideal: 1280
-},
-height: {
-ideal: 720
-}
-},
+video: true,
 
-audio:false
+audio: false
 
 });
 
 
-kamera.srcObject =
-stream;
+video.srcObject = stream;
 
-
-// Tunggu kamera aktif
-
-await kamera.play();
+await video.play();
 
 
 document.getElementById(
@@ -197,8 +142,8 @@ document.getElementById(
 
 
 status.innerHTML =
-"✅ Kamera berhasil dibuka.<br>" +
-"Silakan tekan AMBIL FOTO.";
+"✅ KAMERA BERHASIL DIBUKA";
+
 
 }
 
@@ -212,14 +157,10 @@ error.name +
 "<br>" +
 error.message;
 
-
 alert(
-"Kamera gagal dibuka.\n\n" +
 error.name +
-"\n" +
-error.message +
 "\n\n" +
-"Pastikan izin kamera browser sudah diizinkan."
+error.message
 );
 
 }
@@ -227,23 +168,19 @@ error.message +
 }
 
 
-// ================================
+// ==============================
 // AMBIL FOTO
-// ================================
+// ==============================
 
 function ambilFoto() {
 
-const kamera =
+const video =
 document.getElementById("kamera");
 
 const canvas =
 document.getElementById("canvas");
 
-const status =
-document.getElementById("status");
-
-
-if (!kamera.videoWidth) {
+if (!video.videoWidth) {
 
 alert(
 "Kamera belum siap."
@@ -255,10 +192,10 @@ return;
 
 
 canvas.width =
-kamera.videoWidth;
+video.videoWidth;
 
 canvas.height =
-kamera.videoHeight;
+video.videoHeight;
 
 
 const ctx =
@@ -266,7 +203,7 @@ canvas.getContext("2d");
 
 
 ctx.drawImage(
-kamera,
+video,
 0,
 0,
 canvas.width,
@@ -277,7 +214,15 @@ canvas.height
 const foto =
 canvas.toDataURL(
 "image/jpeg",
-0.7
+0.8
+);
+
+
+// Simpan sementara
+
+sessionStorage.setItem(
+"fotoAbsensi",
+foto
 );
 
 
@@ -289,55 +234,43 @@ stream
 .getTracks()
 .forEach(
 function(track) {
+
 track.stop();
-}
-);
+
+});
 
 }
 
 
-status.innerHTML =
-"✅ Foto berhasil diambil.<br>" +
-"Menyiapkan pengiriman...";
+document.getElementById(
+"status"
+).innerHTML =
+
+"✅ FOTO BERHASIL DIAMBIL";
 
 
-// Simpan foto sementara
+// Tampilkan hasil
 
-sessionStorage.setItem(
-"fotoAbsensi",
-foto
-);
+const gambar =
+document.createElement("img");
+
+gambar.src = foto;
+
+gambar.style.width = "100%";
+
+gambar.style.marginTop = "15px";
+
+gambar.style.borderRadius = "15px";
 
 
-// Kembali ke aplikasi
-
-if (returnURL) {
-
-const separator =
-returnURL.includes("?")
-? "&"
-: "?";
-
-window.location.href =
-returnURL +
-separator +
-"token=" +
-encodeURIComponent(token);
-
-}
-
-else {
-
-window.location.href =
-"https://script.google.com/macros/s/AKfycbwDgGxOWo8dmFxOtwPXbcb9m_eDTkjtW5yqNsKeGsIqGax0SYFYZ0lClzFqDTAtkMrM/exec" +
-"?token=" +
-encodeURIComponent(token);
-
-}
+document.querySelector(
+".container"
+).appendChild(gambar);
 
 }
 
 </script>
 
 </body>
+
 </html>
