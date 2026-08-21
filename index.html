@@ -1,60 +1,119 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
 
-  <title>Kamera Absensi MTsN 8 Kediri</title>
+  <title>
+    Kamera Absensi MTsN 8 Kediri
+  </title>
+
 
   <style>
 
     body {
+
       margin: 0;
+
       padding: 15px;
+
+      font-family: Arial;
+
       background: #eef7f1;
-      font-family: Arial, sans-serif;
+
       text-align: center;
+
     }
+
 
     .container {
+
       max-width: 480px;
+
       margin: auto;
+
       background: white;
+
       padding: 20px;
+
       border-radius: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,.15);
+
+      box-shadow:
+        0 4px 15px
+        rgba(0,0,0,.15);
+
     }
+
 
     h2 {
+
       color: #087443;
+
     }
+
 
     video {
+
       width: 100%;
+
       border-radius: 15px;
-      margin-top: 15px;
+
       background: black;
+
+      margin-top: 15px;
+
     }
+
 
     canvas {
+
       display: none;
+
     }
+
 
     button {
+
       width: 100%;
-      padding: 15px;
+
+      padding: 16px;
+
       margin-top: 15px;
+
       border: none;
+
       border-radius: 10px;
+
       background: #087443;
+
       color: white;
+
       font-size: 17px;
+
       font-weight: bold;
+
     }
 
+
+    button:disabled {
+
+      background: #999;
+
+    }
+
+
     #status {
+
       margin-top: 15px;
+
       font-weight: bold;
+
+      line-height: 1.6;
+
     }
 
   </style>
@@ -67,7 +126,11 @@
 
 <div class="container">
 
-  <h2>📷 KAMERA ABSENSI</h2>
+
+  <h2>
+    📷 KAMERA ABSENSI
+  </h2>
+
 
   <p>
     MTsN 8 Kediri
@@ -81,10 +144,13 @@
   ></video>
 
 
-  <canvas id="canvas"></canvas>
+  <canvas
+    id="canvas"
+  ></canvas>
 
 
   <button
+    id="btnFoto"
     onclick="ambilFoto()"
   >
     📸 AMBIL FOTO
@@ -92,8 +158,9 @@
 
 
   <div id="status">
-    Kamera sedang disiapkan...
+    ⏳ Menyiapkan kamera...
   </div>
+
 
 </div>
 
@@ -103,24 +170,37 @@
 let stream = null;
 
 
-// =================================================
+// ==================================================
+// URL APPS SCRIPT
+// ==================================================
+
+const APP_URL =
+  "https://script.google.com/macros/s/AKfycbwDgGxOWo8dmFxOtwPXbcb9m_eDTkjtW5yqNsKeGsIqGax0SYFYZ0lClzFqDTAtkMrM/exec";
+
+
+// ==================================================
 // BUKA KAMERA
-// =================================================
+// ==================================================
 
 async function bukaKamera() {
 
   try {
 
     stream =
-      await navigator.mediaDevices.getUserMedia({
+      await navigator.mediaDevices
+        .getUserMedia({
 
-        video: {
-          facingMode: "user"
-        },
+          video: {
 
-        audio: false
+            facingMode:
+              "user"
 
-      });
+          },
+
+          audio:
+            false
+
+        });
 
 
     const kamera =
@@ -138,6 +218,7 @@ async function bukaKamera() {
     ).innerHTML =
       "✅ Kamera siap. Silakan ambil foto.";
 
+
   }
 
   catch(error) {
@@ -145,7 +226,8 @@ async function bukaKamera() {
     document.getElementById(
       "status"
     ).innerHTML =
-      "❌ Kamera tidak dapat dibuka.";
+      "❌ Kamera gagal dibuka.";
+
 
     alert(
       "Kamera tidak dapat dibuka.\n\n" +
@@ -157,11 +239,11 @@ async function bukaKamera() {
 }
 
 
-// =================================================
+// ==================================================
 // AMBIL FOTO
-// =================================================
+// ==================================================
 
-function ambilFoto() {
+async function ambilFoto() {
 
   const kamera =
     document.getElementById(
@@ -175,13 +257,24 @@ function ambilFoto() {
     );
 
 
+  const status =
+    document.getElementById(
+      "status"
+    );
+
+
+  const tombol =
+    document.getElementById(
+      "btnFoto"
+    );
+
+
   if (
-    !kamera.videoWidth ||
-    !kamera.videoHeight
+    !kamera.videoWidth
   ) {
 
     alert(
-      "Kamera belum siap. Tunggu beberapa detik."
+      "Kamera belum siap."
     );
 
     return;
@@ -189,8 +282,13 @@ function ambilFoto() {
   }
 
 
+  tombol.disabled =
+    true;
+
+
   canvas.width =
     kamera.videoWidth;
+
 
   canvas.height =
     kamera.videoHeight;
@@ -211,26 +309,12 @@ function ambilFoto() {
   );
 
 
-  // ---------------------------------------------
-  // UBAH FOTO MENJADI DATA
-  // ---------------------------------------------
-
   const foto =
     canvas.toDataURL(
       "image/jpeg",
-      0.7
+      0.6
     );
 
-
-  document.getElementById(
-    "status"
-  ).innerHTML =
-    "⏳ Foto berhasil diambil. Mengembalikan ke aplikasi...";
-
-
-  // ---------------------------------------------
-  // MATIKAN KAMERA
-  // ---------------------------------------------
 
   if (stream) {
 
@@ -238,63 +322,133 @@ function ambilFoto() {
       .getTracks()
       .forEach(
         function(track) {
+
           track.stop();
+
         }
       );
 
   }
 
 
-  // ---------------------------------------------
-  // KIRIM FOTO KE APLIKASI ABSENSI
-  // ---------------------------------------------
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
 
-  if (
-    window.opener &&
-    !window.opener.closed
-  ) {
 
-    window.opener.postMessage(
+  const token =
+    params.get(
+      "token"
+    );
+
+
+  if (!token) {
+
+    alert(
+      "Token foto tidak ditemukan."
+    );
+
+    tombol.disabled =
+      false;
+
+    return;
+
+  }
+
+
+  status.innerHTML =
+    "⏳ Mengirim foto...";
+
+
+  // =================================================
+  // KIRIM FOTO KE APPS SCRIPT
+  // =================================================
+
+  try {
+
+    await fetch(
+
+      APP_URL,
 
       {
-        type: "fotoAbsensi",
-        foto: foto
-      },
 
-      "https://script.google.com"
+        method:
+          "POST",
+
+        mode:
+          "no-cors",
+
+        headers: {
+
+          "Content-Type":
+            "application/x-www-form-urlencoded"
+
+        },
+
+        body:
+
+          "token=" +
+          encodeURIComponent(
+            token
+          ) +
+
+          "&foto=" +
+          encodeURIComponent(
+            foto
+          )
+
+      }
 
     );
 
 
+    status.innerHTML =
+      "✅ Foto berhasil dikirim.<br>" +
+      "Kembali ke aplikasi...";
+
+
+    // =================================================
+    // KEMBALI KE APPS SCRIPT
+    // =================================================
+
     setTimeout(
       function() {
 
-        window.close();
+        window.location.href =
+          APP_URL +
+          "?token=" +
+          encodeURIComponent(
+            token
+          );
 
       },
-      1000
+      1500
     );
 
 
   }
 
-  else {
+  catch(error) {
 
-    // Kalau halaman tidak dibuka sebagai popup
+    status.innerHTML =
+      "❌ Gagal mengirim foto.";
 
     alert(
-      "Foto berhasil diambil.\n\n" +
-      "Silakan kembali ke halaman absensi."
+      error.message
     );
+
+    tombol.disabled =
+      false;
 
   }
 
 }
 
 
-// =================================================
+// ==================================================
 // JALANKAN KAMERA
-// =================================================
+// ==================================================
 
 window.addEventListener(
   "load",
@@ -305,4 +459,5 @@ window.addEventListener(
 
 
 </body>
+
 </html>
