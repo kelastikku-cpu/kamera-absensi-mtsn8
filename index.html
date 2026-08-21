@@ -28,10 +28,10 @@
       color: #087443;
     }
 
-    video {
+    video,
+    img {
       width: 100%;
       border-radius: 15px;
-      background: #000;
       margin-top: 15px;
     }
 
@@ -47,14 +47,11 @@
       font-weight: bold;
     }
 
-    button:disabled {
-      background: #999;
+    #hasil {
+      display: none;
     }
 
-    #hasil {
-      width: 100%;
-      border-radius: 15px;
-      margin-top: 15px;
+    #kirim {
       display: none;
     }
 
@@ -83,6 +80,10 @@
 
   <img id="hasil">
 
+  <button id="kirim" onclick="kirimFoto()">
+    ✅ GUNAKAN FOTO INI
+  </button>
+
   <div id="status"></div>
 
 </div>
@@ -90,19 +91,29 @@
 <script>
 
 let kameraStream = null;
+let fotoData = "";
+
+const urlKembali =
+  new URLSearchParams(window.location.search).get("return");
+
 
 async function mulaiKamera() {
 
-  const status = document.getElementById("status");
+  const status =
+    document.getElementById("status");
 
   try {
 
-    kameraStream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: "user"
-      },
-      audio: false
-    });
+    kameraStream =
+      await navigator.mediaDevices.getUserMedia({
+
+        video: {
+          facingMode: "user"
+        },
+
+        audio: false
+
+      });
 
     document.getElementById("kamera").srcObject =
       kameraStream;
@@ -110,7 +121,9 @@ async function mulaiKamera() {
     status.innerHTML =
       "✅ Kamera aktif. Silakan ambil foto.";
 
-  } catch (error) {
+  }
+
+  catch(error) {
 
     status.innerHTML =
       "❌ Kamera tidak dapat dibuka. " +
@@ -134,10 +147,14 @@ function ambilFoto() {
   const hasil =
     document.getElementById("hasil");
 
-  canvas.width = kamera.videoWidth;
-  canvas.height = kamera.videoHeight;
+  canvas.width =
+    kamera.videoWidth;
 
-  const ctx = canvas.getContext("2d");
+  canvas.height =
+    kamera.videoHeight;
+
+  const ctx =
+    canvas.getContext("2d");
 
   ctx.drawImage(
     kamera,
@@ -147,24 +164,72 @@ function ambilFoto() {
     canvas.height
   );
 
-  hasil.src =
-    canvas.toDataURL("image/jpeg", 0.8);
+  fotoData =
+    canvas.toDataURL(
+      "image/jpeg",
+      0.8
+    );
 
-  hasil.style.display = "block";
+  hasil.src =
+    fotoData;
+
+  hasil.style.display =
+    "block";
+
+  document.getElementById("kirim").style.display =
+    "block";
 
   document.getElementById("status").innerHTML =
     "✅ Foto berhasil diambil.";
 
   if (kameraStream) {
 
-    kameraStream.getTracks().forEach(
-      track => track.stop()
-    );
+    kameraStream
+      .getTracks()
+      .forEach(
+        track => track.stop()
+      );
 
   }
 
 }
 
+
+function kirimFoto() {
+
+  if (!fotoData) {
+
+    alert("Silakan ambil foto terlebih dahulu.");
+
+    return;
+
+  }
+
+  if (!urlKembali) {
+
+    alert(
+      "Halaman tujuan tidak ditemukan."
+    );
+
+    return;
+
+  }
+
+  document.getElementById("status").innerHTML =
+    "⏳ Mengirim foto...";
+
+  /*
+   * Foto dikirim kembali melalui parameter URL.
+   * Untuk sementara kita hanya melakukan
+   * pengujian alur.
+   */
+
+  window.location.href =
+    urlKembali +
+    "?foto=" +
+    encodeURIComponent(fotoData);
+
+}
 
 mulaiKamera();
 
