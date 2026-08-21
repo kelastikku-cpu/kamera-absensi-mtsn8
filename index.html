@@ -202,36 +202,35 @@ function kirimFoto() {
     alert("Silakan ambil foto terlebih dahulu.");
 
     return;
-
   }
 
-  if (!urlKembali) {
+  if (window.opener) {
 
-    alert(
-      "Halaman tujuan tidak ditemukan."
+    window.opener.postMessage(
+      {
+        type: "fotoAbsensi",
+        foto: fotoData
+      },
+      "https://script.google.com"
     );
 
-    return;
+    document.getElementById("status").innerHTML =
+      "✅ Foto berhasil dikirim.";
+
+    setTimeout(function() {
+      window.close();
+    }, 1000);
+
+  } else {
+
+    alert(
+      "Halaman absensi tidak ditemukan. " +
+      "Buka kamera melalui tombol BUKA KAMERA."
+    );
 
   }
 
-  document.getElementById("status").innerHTML =
-    "⏳ Mengirim foto...";
-
-  /*
-   * Foto dikirim kembali melalui parameter URL.
-   * Untuk sementara kita hanya melakukan
-   * pengujian alur.
-   */
-
-  window.location.href =
-    urlKembali +
-    "?foto=" +
-    encodeURIComponent(fotoData);
-
-}
-
-mulaiKamera();
+}mulaiKamera();
 
 </script>
 
