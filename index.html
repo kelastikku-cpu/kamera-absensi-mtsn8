@@ -1,38 +1,43 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>Kamera Absensi MTsN 8 Kediri</title>
 
   <style>
+
     body {
       margin: 0;
-      padding: 20px;
+      padding: 15px;
+      background: #eef7f1;
       font-family: Arial, sans-serif;
-      background: #f1f8f4;
       text-align: center;
     }
 
-    .box {
-      max-width: 450px;
+    .container {
+      max-width: 480px;
       margin: auto;
       background: white;
       padding: 20px;
-      border-radius: 18px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,.15);
     }
 
     h2 {
       color: #087443;
     }
 
-    video,
-    img {
+    video {
       width: 100%;
       border-radius: 15px;
       margin-top: 15px;
+      background: black;
+    }
+
+    canvas {
+      display: none;
     }
 
     button {
@@ -47,64 +52,66 @@
       font-weight: bold;
     }
 
-    #hasil {
-      display: none;
-    }
-
-    #kirim {
-      display: none;
-    }
-
     #status {
       margin-top: 15px;
       font-weight: bold;
     }
+
   </style>
+
 </head>
+
 
 <body>
 
-<div class="box">
 
-  <h2>📷 FOTO ABSENSI</h2>
+<div class="container">
 
-  <p>MTsN 8 Kediri</p>
+  <h2>📷 KAMERA ABSENSI</h2>
 
-  <video id="kamera" autoplay playsinline></video>
+  <p>
+    MTsN 8 Kediri
+  </p>
 
-  <button onclick="ambilFoto()">
+
+  <video
+    id="kamera"
+    autoplay
+    playsinline
+  ></video>
+
+
+  <canvas id="canvas"></canvas>
+
+
+  <button
+    onclick="ambilFoto()"
+  >
     📸 AMBIL FOTO
   </button>
 
-  <canvas id="canvas" style="display:none;"></canvas>
 
-  <img id="hasil">
-
-  <button id="kirim" onclick="kirimFoto()">
-    ✅ GUNAKAN FOTO INI
-  </button>
-
-  <div id="status"></div>
+  <div id="status">
+    Kamera sedang disiapkan...
+  </div>
 
 </div>
 
+
 <script>
 
-let kameraStream = null;
-let fotoData = "";
-
-const urlKembali =
-  new URLSearchParams(window.location.search).get("return");
+let stream = null;
 
 
-async function mulaiKamera() {
+// =================================================
+// BUKA KAMERA
+// =================================================
 
-  const status =
-    document.getElementById("status");
+async function bukaKamera() {
 
   try {
 
-    kameraStream =
+    stream =
       await navigator.mediaDevices.getUserMedia({
 
         video: {
@@ -115,37 +122,72 @@ async function mulaiKamera() {
 
       });
 
-    document.getElementById("kamera").srcObject =
-      kameraStream;
 
-    status.innerHTML =
-      "✅ Kamera aktif. Silakan ambil foto.";
+    const kamera =
+      document.getElementById(
+        "kamera"
+      );
+
+
+    kamera.srcObject =
+      stream;
+
+
+    document.getElementById(
+      "status"
+    ).innerHTML =
+      "✅ Kamera siap. Silakan ambil foto.";
 
   }
 
   catch(error) {
 
-    status.innerHTML =
-      "❌ Kamera tidak dapat dibuka. " +
-      "Pastikan izin kamera sudah diberikan.";
+    document.getElementById(
+      "status"
+    ).innerHTML =
+      "❌ Kamera tidak dapat dibuka.";
 
-    console.error(error);
+    alert(
+      "Kamera tidak dapat dibuka.\n\n" +
+      "Pastikan izin kamera sudah diberikan."
+    );
 
   }
 
 }
 
 
+// =================================================
+// AMBIL FOTO
+// =================================================
+
 function ambilFoto() {
 
   const kamera =
-    document.getElementById("kamera");
+    document.getElementById(
+      "kamera"
+    );
+
 
   const canvas =
-    document.getElementById("canvas");
+    document.getElementById(
+      "canvas"
+    );
 
-  const hasil =
-    document.getElementById("hasil");
+
+  if (
+    !kamera.videoWidth ||
+    !kamera.videoHeight
+  ) {
+
+    alert(
+      "Kamera belum siap. Tunggu beberapa detik."
+    );
+
+    return;
+
+  }
+
 
   canvas.width =
     kamera.videoWidth;
@@ -153,8 +195,12 @@ function ambilFoto() {
   canvas.height =
     kamera.videoHeight;
 
+
   const ctx =
-    canvas.getContext("2d");
+    canvas.getContext(
+      "2d"
+    );
+
 
   ctx.drawImage(
     kamera,
@@ -164,75 +210,99 @@ function ambilFoto() {
     canvas.height
   );
 
-  fotoData =
+
+  // ---------------------------------------------
+  // UBAH FOTO MENJADI DATA
+  // ---------------------------------------------
+
+  const foto =
     canvas.toDataURL(
       "image/jpeg",
-      0.8
+      0.7
     );
 
-  hasil.src =
-    fotoData;
 
-  hasil.style.display =
-    "block";
+  document.getElementById(
+    "status"
+  ).innerHTML =
+    "⏳ Foto berhasil diambil. Mengembalikan ke aplikasi...";
 
-  document.getElementById("kirim").style.display =
-    "block";
 
-  document.getElementById("status").innerHTML =
-    "✅ Foto berhasil diambil.";
+  // ---------------------------------------------
+  // MATIKAN KAMERA
+  // ---------------------------------------------
 
-  if (kameraStream) {
+  if (stream) {
 
-    kameraStream
+    stream
       .getTracks()
       .forEach(
-        track => track.stop()
+        function(track) {
+          track.stop();
+        }
       );
+
+  }
+
+
+  // ---------------------------------------------
+  // KIRIM FOTO KE APLIKASI ABSENSI
+  // ---------------------------------------------
+
+  if (
+    window.opener &&
+    !window.opener.closed
+  ) {
+
+    window.opener.postMessage(
+
+      {
+        type: "fotoAbsensi",
+        foto: foto
+      },
+
+      "https://script.google.com"
+
+    );
+
+
+    setTimeout(
+      function() {
+
+        window.close();
+
+      },
+      1000
+    );
+
+
+  }
+
+  else {
+
+    // Kalau halaman tidak dibuka sebagai popup
+
+    alert(
+      "Foto berhasil diambil.\n\n" +
+      "Silakan kembali ke halaman absensi."
+    );
 
   }
 
 }
 
 
-function kirimFoto() {
+// =================================================
+// JALANKAN KAMERA
+// =================================================
 
-  if (!fotoData) {
-
-    alert("Silakan ambil foto terlebih dahulu.");
-
-    return;
-  }
-
-  if (window.opener) {
-
-    window.opener.postMessage(
-      {
-        type: "fotoAbsensi",
-        foto: fotoData
-      },
-      "https://script.google.com"
-    );
-
-    document.getElementById("status").innerHTML =
-      "✅ Foto berhasil dikirim.";
-
-    setTimeout(function() {
-      window.close();
-    }, 1000);
-
-  } else {
-
-    alert(
-      "Halaman absensi tidak ditemukan. " +
-      "Buka kamera melalui tombol BUKA KAMERA."
-    );
-
-  }
-
-}mulaiKamera();
+window.addEventListener(
+  "load",
+  bukaKamera
+);
 
 </script>
+
 
 </body>
 </html>
