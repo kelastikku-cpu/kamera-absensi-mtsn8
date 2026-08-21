@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Kamera Absensi MTsN 8 Kediri</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f1f8f4;
+      text-align: center;
+    }
+
+    .box {
+      max-width: 450px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 18px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+
+    h2 {
+      color: #087443;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 15px;
+      background: #000;
+      margin-top: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 10px;
+      background: #087443;
+      color: white;
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    button:disabled {
+      background: #999;
+    }
+
+    #hasil {
+      width: 100%;
+      border-radius: 15px;
+      margin-top: 15px;
+      display: none;
+    }
+
+    #status {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+
+  <h2>📷 FOTO ABSENSI</h2>
+
+  <p>MTsN 8 Kediri</p>
+
+  <video id="kamera" autoplay playsinline></video>
+
+  <button onclick="ambilFoto()">
+    📸 AMBIL FOTO
+  </button>
+
+  <canvas id="canvas" style="display:none;"></canvas>
+
+  <img id="hasil">
+
+  <div id="status"></div>
+
+</div>
+
+<script>
+
+let kameraStream = null;
+
+async function mulaiKamera() {
+
+  const status = document.getElementById("status");
+
+  try {
+
+    kameraStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: "user"
+      },
+      audio: false
+    });
+
+    document.getElementById("kamera").srcObject =
+      kameraStream;
+
+    status.innerHTML =
+      "✅ Kamera aktif. Silakan ambil foto.";
+
+  } catch (error) {
+
+    status.innerHTML =
+      "❌ Kamera tidak dapat dibuka. " +
+      "Pastikan izin kamera sudah diberikan.";
+
+    console.error(error);
+
+  }
+
+}
+
+
+function ambilFoto() {
+
+  const kamera =
+    document.getElementById("kamera");
+
+  const canvas =
+    document.getElementById("canvas");
+
+  const hasil =
+    document.getElementById("hasil");
+
+  canvas.width = kamera.videoWidth;
+  canvas.height = kamera.videoHeight;
+
+  const ctx = canvas.getContext("2d");
+
+  ctx.drawImage(
+    kamera,
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+  hasil.src =
+    canvas.toDataURL("image/jpeg", 0.8);
+
+  hasil.style.display = "block";
+
+  document.getElementById("status").innerHTML =
+    "✅ Foto berhasil diambil.";
+
+  if (kameraStream) {
+
+    kameraStream.getTracks().forEach(
+      track => track.stop()
+    );
+
+  }
+
+}
+
+
+mulaiKamera();
+
+</script>
+
+</body>
+</html>
